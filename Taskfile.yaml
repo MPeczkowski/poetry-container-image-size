@@ -1,0 +1,34 @@
+version: 3
+
+vars:
+  # Change if you are using docker
+  tool: podman
+
+tasks:
+  clear:
+    desc: "Clear cache"
+    # Info: -exec rm -rf - doesn't work well sometimes on these files
+    cmd: 'find . -name ".pytest_cache" -or  -name "__pycache__" -type d | while read line; do rm -rf $line; done'
+
+  tests:
+    desc: "Run test in console"
+    cmds:
+    - cmd: "mkdir reports"
+      ignore_error: true
+    - "coverage run -m pytest -vvv example_application_tests --junitxml=reports/test_report.xml"
+    - "coverage xml -o reports/coverage_report.xml"
+    - "coverage report"
+
+  run:
+    desc: "Run app"
+    cmd: "uvicorn --reload example_application.main:app"
+
+  format:
+    desc: "Run formatter on all directories with python code"
+    cmds:
+      - "black example_application"
+      - "black example_application_tests"
+
+  default:
+    deps:
+      - "run"
