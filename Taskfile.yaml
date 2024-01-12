@@ -32,3 +32,52 @@ tasks:
   default:
     deps:
       - "run"
+
+  container:build:all-in:tests:
+    desc: "Build to the biggest container image, will all dependencies inside"
+    cmd: "{{.tool}} build --rm --file dockerfiles/Dockerfile_all_in_tests . --tag example_application:all-in-tests"
+
+  container:build:all-in:prod:
+    desc: "Build to the biggest container image, all packages installed inside except dev dependencies"
+    cmd: "{{.tool}} build --rm --file dockerfiles/Dockerfile_all_in_prod . --tag example_application:all-in-prod"
+
+  container:build:venv-mv:tests:
+    desc: "Build an image with moved .venv "
+    cmd: "{{.tool}} build --rm --file dockerfiles/Dockerfile_venv_tests . --tag example_application:venv-tests"
+
+  container:build:venv-mv:prod:
+    desc: "Build image with moved .venv without dev dependencies "
+    cmd: "{{.tool}} build --rm --file dockerfiles/Dockerfile_venv_prod . --tag example_application:venv-prod"
+
+  container:build:export:tests:
+    desc: "Build an image with export requirements file"
+    cmd: "{{.tool}} build --rm --file dockerfiles/Dockerfile_export_requirements_tests . --tag example_application:export-tests"
+
+  container:build:export:prod:
+    desc: "Build an image with export requirements file without dev dependencies"
+    cmd: "{{.tool}} build --rm --file dockerfiles/Dockerfile_export_requirements_prod . --tag example_application:export-prod"
+
+  container:build:test:
+    desc: "Build image with export requirements file without dev dependencies"
+    cmd: "{{.tool}} build --rm --file dockerfiles/Dockerfile . --output reports --target export_test_results"
+
+  container:build:
+    desc: "Build an image with export requirements file without dev dependencies"
+    deps:
+      - "container:build:test"
+    cmd: "{{.tool}} build --rm --file dockerfiles/Dockerfile . --tag example_application:latest"
+
+  container:all:
+    desc: "Build all images, one by one"
+    cmds:
+      - task: "container:build:all-in:tests"
+      - task: "container:build:all-in:prod"
+      - task: "container:build:venv-mv:tests"
+      - task: "container:build:venv-mv:prod"
+      - task: "container:build:export:tests"
+      - task: "container:build:export:prod"
+      - task: "container:build"
+
+  list:containers:
+    desc: "Get list of images"
+    cmd: "{{.tool}} images | grep example_application"
